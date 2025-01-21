@@ -7,24 +7,25 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
+@EnableWebSecurity  // Явно включает поддержку веб-безопасности
 public class SecurityConfig {
 
     // Конфигурация для настройки безопасности
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .authorizeRequests()
-                // Разрешаем доступ без логина только к URL /home
-                .antMatchers("/home").permitAll()
-                // Все остальные запросы требуют аутентификации
-                .anyRequest().authenticated()
-                .and()
-                // Настроим форму логина
-                .formLogin()
-                // Разрешим доступ к форме логина всем
-                .permitAll();
+                .authorizeHttpRequests(authz -> authz
+                        // Разрешаем доступ без логина только к URL /home
+                        .requestMatchers("/home").permitAll()
+                        // Все остальные запросы требуют аутентификации
+                        .anyRequest().authenticated())
+                // Настроим форму логина с настройками по умолчанию
+                .formLogin(withDefaults());  // Новый способ настройки логина
 
         return http.build();  // Строим и возвращаем объект конфигурации
     }
